@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ChatJS - Josh Chat - </title>
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+</head>
+<body>
+	<div id="user_access">
+		<form id='login'>
+			<input type='text' placeholder="Insert your nickname" name='nick' id='nick'/>
+			<input type='submit' value='Enter'>
+		</form>
+	</div>
+
+	<div id="chat_room">
+		<div id="messages_history"></div>
+		<form id='chat'>
+			<input type="text" id='message_text' name='message_text'/>
+			<input type='submit' value='Send Message!'/>
+		</form>
+	</div>
+
+	<div id="messages_history"></div>
+	<select multiple="multiple" id="user_list"><option value=''>All</option></select>
+	<form id="chat">
+
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript">
+
+			var socket = io.connect();
+
+			$("form#login").submit(function(e){
+				e.preventDefault();
+
+				socket.emit("enter", $(this).find(#nick).val(), function(valid){
+					if(valid){
+						$("#user_access").hide();
+						$("#chat_room").show();
+					}else{
+						$("user_access").val("");
+						alert("User already exist in this chat room");
+					}
+				});
+
+			});
+
+			$("form#chat").submit(function(e){
+				e.preventDefault();
+				socket.emit("send message", $(this).find("#message_text").val(),function(){
+					$("form#chat #message_text").val("");
+				});
+			});
+			socket.on("update messages", function(messages){
+				var formated_messages = $("<p />").text(messages);
+				$("#messages_history").append(formated_messages);
+			});
+
+			socket.on("update users", function(users){
+				$("#users_list").empty();
+				$("#users_list").append("<option value=''>All</option>");
+				$.each(users,function(index){
+					var user_option = $("<option/>").text(users[index]);
+					$("#users_list").append(user_option);
+				});
+			});
+
+		</script>
+	</body>
+	</html>
